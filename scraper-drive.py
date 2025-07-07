@@ -120,13 +120,23 @@ import gspread
 from gspread_dataframe import set_with_dataframe
 
 gc = gspread.authorize(creds)
+df = pd.DataFrame(results)
 
 try:
     sh = gc.open_by_key(SHEET_ID)
     worksheet = sh.get_worksheet(0)
     worksheet.clear()
-    df = pd.DataFrame(results)
     set_with_dataframe(worksheet, df)
     print(f"✅ Consolidado cargado en: https://docs.google.com/spreadsheets/d/{SHEET_ID}")
+
 except Exception as e:
-    raise RuntimeError(f"❌ No se pudo escribir en la hoja. Detalle: {e}")
+    print(f"⚠️ No se pudo escribir en la hoja. Detalle: {e}")
+
+    # Guardar como Excel para descarga directa
+    local_file = "/content/consolidado_drive.xlsx"
+    df.to_excel(local_file, index=False)
+    print("📁 Consolidado guardado como archivo Excel local.")
+
+    # Mostrar botón de descarga
+    from IPython.display import FileLink
+    display(FileLink(local_file))
